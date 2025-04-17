@@ -6,12 +6,19 @@ import numpy as np
 import os
 from werkzeug.utils import secure_filename
 
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+gpus = tf.config.experimental.list_physical_devices('GPU')
+for gpu in gpus:
+    tf.config.experimental.set_memory_growth(gpu, True)
+
 
 app = Flask(__name__)
 CORS(app)
 
 # Load model once
-model = tf.keras.models.load_model('model/my_model.keras')
+model = None
+
 
 # Class labels (same as Streamlit)
 CLASS_NAMES = ['Potato__Early_blight', 'Potato__Late_blight', 'Potato__healthy']
@@ -29,6 +36,10 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    global model
+    if model is None:
+        model = tf.keras.models.load_model('model/my_model.keras')
+    
     print('Inside the prediction endpoint')
     
     if 'file' not in request.files:
