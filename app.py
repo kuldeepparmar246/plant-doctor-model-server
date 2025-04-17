@@ -4,6 +4,7 @@ import tensorflow as tf
 from PIL import Image
 import numpy as np
 import os
+from werkzeug.utils import secure_filename
 
 
 app = Flask(__name__)
@@ -36,7 +37,8 @@ def predict():
 
     image_file = request.files['file']
     os.makedirs("uploads", exist_ok=True)
-    filepath = os.path.join("uploads", image_file.filename)
+    filename = secure_filename(image_file.filename)
+    filepath = os.path.join("uploads", filename)
     print(filepath)
     image_file.save(filepath)
     try:
