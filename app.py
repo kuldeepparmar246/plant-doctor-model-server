@@ -29,12 +29,13 @@ def home():
 @app.route('/predict', methods=['POST'])
 def predict():
     print('Inside the prediction endpoint')
-    file = request.files['file']
     
     if 'file' not in request.files:
         return jsonify({'error': 'No image uploaded'}), 400
+    
 
     image_file = request.files['file']
+    os.makedirs("uploads", exist_ok=True)
     filepath = os.path.join("uploads", image_file.filename)
     print(filepath)
     image_file.save(filepath)
