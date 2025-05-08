@@ -65,7 +65,58 @@ def predict():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
     finally:
-        os.remove(filepath)  
+        os.remove(filepath) 
+
+
+#  soyabean disease 
+interpreter = tf.lite.Interpreter(model_path="model/soya_model.tflite")
+interpreter.allocate_tensors()
+
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+
+
+class_names = ['rust disease','healthy']
+
+def preprocess_image(image_path):
+    image = tf.keras.preprocessing.image.load_img(image_path, target_size=(256, 256, 3))
+    input_arr = tf.keras.preprocessing.image.img_to_array(image)
+    input_arr = np.array([input_arr])
+    return input_arr
+
+@app.route('/predict/soya', methods=['POST'])
+def predict_soya():
+    print('Inside the Soya prediction endpoint')
+
+    if 'file' not in request.files:
+        return jsonify({'error': 'No image uploaded'}), 400
+
+    image_file = request.files['file']
+    os.makedirs("uploads", exist_ok=True)
+    filename = secure_filename(image_file.filename)
+    filepath = os.path.join("uploads", filename)
+    image_file.save(filepath)
+
+    try:
+        image = preprocess_image(filepath)
+
+        interpreter.set_tensor(input_details[0]['index'], image)
+        interpreter.invoke()
+        prediction = interpreter.get_tensor(output_details[0]['index'])
+
+        predicted_class_index = int(np.argmax(prediction))
+        predicted_class_name = class_names[predicted_class_index]
+
+        return jsonify({
+            'predicted_class_index': predicted_class_index,
+            'predicted_class_name': predicted_class_name
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        os.remove(filepath)
 
 if __name__ == '__main__':
     import os
