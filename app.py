@@ -16,14 +16,13 @@ for gpu in gpus:
 app = Flask(__name__)
 CORS(app)
 
-# Load model once
+
 model = None
 
 
-# Class labels (same as Streamlit)
 CLASS_NAMES = ['Potato__Early_blight', 'Potato__Late_blight', 'Potato__healthy']
 
-# Prediction preparation
+
 def prepare_image(image_path):
     image = tf.keras.preprocessing.image.load_img(image_path, target_size=(128, 128, 3))
     input_arr = tf.keras.preprocessing.image.img_to_array(image)
@@ -32,7 +31,7 @@ def prepare_image(image_path):
 
 @app.route('/')
 def home():
-    return '✅ Flask server is running and TensorFlow is ready!'
+    return 'Flask server is running and TensorFlow is ready!'
 
 @app.route('/predict', methods=['POST'])
 def predict():
@@ -69,7 +68,6 @@ def predict():
         os.remove(filepath)  
 
 if __name__ == '__main__':
-    # app.run(debug=True, port=5000)
     import os
     port = int(os.environ.get("PORT", 5000))
     app.run(debug=False, host='0.0.0.0', port=port)
